@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Scanner;
-import javax.sound.sampled.*;
 import javax.swing.*;
 
 public class SnakeFoodRush extends JFrame {
@@ -19,7 +18,8 @@ public class SnakeFoodRush extends JFrame {
     int highScore = 0;
     int previousScore = -1;
 
-    SoundPlayer sounds = new SoundPlayer();
+    MusicPlayer music = new MusicPlayer();
+    SoundEffects effects = new SoundEffects();
 
     CardLayout cards = new CardLayout();
     JPanel screens = new JPanel(cards);
@@ -287,7 +287,7 @@ class GamePanel extends JPanel implements ActionListener {
 
         timer.setDelay(START_DELAY);
         timer.restart();
-        app.sounds.startMusic();
+        app.music.start();
 
         app.showScreen("GAME");
         repaint();
@@ -301,9 +301,9 @@ class GamePanel extends JPanel implements ActionListener {
         if (key == KeyEvent.VK_P || key == KeyEvent.VK_SPACE) {
             paused = !paused;
             if (paused) {
-                app.sounds.pauseMusic();
+                app.music.pause();
             } else {
-                app.sounds.resumeMusic();
+                app.music.resume();
             }
             repaint();
             return;
@@ -400,7 +400,7 @@ class GamePanel extends JPanel implements ActionListener {
     }
 
     void eatFruit() {
-        app.sounds.playEat();
+        app.effects.playEat();
         score++;
         fruitsEaten++;
 
@@ -453,8 +453,8 @@ class GamePanel extends JPanel implements ActionListener {
         running = false;
         timer.stop();
 
-        app.sounds.stopMusic();
-        app.sounds.playHit();
+        app.music.stop();
+        app.effects.playHit();
 
         app.gameOver(score, level, levelMode);
     }
@@ -581,69 +581,6 @@ class GameOverPanel extends JPanel {
         } else {
             messageLabel.setText("Good game! Try to beat your best score.");
             messageLabel.setForeground(Color.WHITE);
-        }
-    }
-}
-
-class SoundPlayer {
-
-    Clip eatSound = load("eatsfx.wav");
-    Clip hitSound = load("Hitwallsfx.wav");
-    Clip music = load("BGmusic.wav");
-
-    Clip load(String fileName) {
-        try (AudioInputStream audio = AudioSystem.getAudioInputStream(new File(fileName))) {
-            Clip clip = AudioSystem.getClip();
-            clip.open(audio);
-            return clip;
-        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
-            System.out.println("Could not load " + fileName + ": " + e);
-            return null;
-        }
-    }
-
-    void play(Clip clip) {
-        if (clip == null) {
-            return;
-        }
-        clip.stop();
-        clip.setFramePosition(0);
-        clip.start();
-    }
-
-    void playEat() {
-        play(eatSound);
-    }
-
-    void playHit() {
-        play(hitSound);
-    }
-
-    void startMusic() {
-        if (music == null) {
-            return;
-        }
-        music.stop();
-        music.setFramePosition(0);
-        music.loop(Clip.LOOP_CONTINUOUSLY);
-    }
-
-    void pauseMusic() {
-        if (music != null) {
-            music.stop();
-        }
-    }
-
-    void resumeMusic() {
-        if (music != null) {
-            music.loop(Clip.LOOP_CONTINUOUSLY);
-        }
-    }
-
-    void stopMusic() {
-        if (music != null) {
-            music.stop();
-            music.setFramePosition(0);
         }
     }
 }
